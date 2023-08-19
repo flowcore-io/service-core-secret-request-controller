@@ -1,0 +1,58 @@
+name: Test
+
+on:
+  push:
+    branches-ignore: [ "main" ]
+
+env:
+  NODE_VERSION: ">=18.12.1"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.FLOWCORE_MACHINE_GITHUB_TOKEN }}
+          submodules: true
+      - name: Kind Cluster
+        uses: helm/kind-action@v1.5.0
+      - name: Install Metacontroller
+        run: |
+          kubectl apply -k https://github.com/metacontroller/metacontroller/manifests/production
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.5.1
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          cache: yarn
+      - name: Yarn install
+        run: |
+          yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn lint
+      - name: Validate Build
+        run: yarn build
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::305363105399:role/ECRGithubManager
+          aws-region: eu-west-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Start Dependencies
+        run: |
+          docker-compose -f test/docker/docker-compose.yaml up -d
+          chmod +x test/docker/await-testing.sh
+          test/docker/await-testing.sh
+      - name: Test
+        env:
+          LOCAL_K8S_CONTEXT: kind-chart-testing
+        run: yarn test --runInBand --detectOpenHandles --forceExit

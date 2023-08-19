@@ -1,0 +1,60 @@
+name: Build Docker Image
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.FLOWCORE_MACHINE_GITHUB_TOKEN }}
+          submodules: true
+      - name: Extract version from package.json
+        uses: sergeysova/jq-action@v2
+        id: version
+        with:
+          cmd: 'jq .version package.json -r'
+
+      - name: Show my version
+        run: 'echo "version ${{ steps.version.outputs.value }}"'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::305363105399:role/ECRGithubManager
+          aws-region: eu-west-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Extract package name from package.json
+        uses: sergeysova/jq-action@v2
+        id: package
+        with:
+          cmd: 'jq .name package.json -r'
+
+      - name: Show package name
+        run: 'echo "version ${{ steps.package.outputs.value }}"'
+
+      - uses: int128/create-ecr-repository-action@v1
+        with:
+          repository: ${{ steps.package.outputs.value }}
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.package.outputs.value }}
+          IMAGE_TAG: ${{ steps.version.outputs.value }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

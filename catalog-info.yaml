@@ -1,0 +1,17 @@
+#nonk8s
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "core-secret-request-controller"
+  description: A secret request metacontroller hook that handles requests for secrets from within the kubernetes cluster
+  annotations:
+    github.com/project-slug: flowcore-io/service-core-secret-request-controller
+spec:
+  type: service
+  owner: backend
+  system: system:core-platform-controllers
+  lifecycle: experimental
+
+  dependsOn:
+    - component:flowcore-microservice
+    - component:testing-flowcore-microservice

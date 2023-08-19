@@ -1,0 +1,3 @@
+[submodule "src/assets/messages"]
+	path = src/assets/messages
+	url = git@github.com:flowcore-io/the-source-message-schema.git

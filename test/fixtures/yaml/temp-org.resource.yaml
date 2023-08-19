@@ -1,0 +1,8 @@
+apiVersion: flowcore.io/v1
+kind: EventSource
+metadata:
+  name: temp-org
+  namespace: temp-org
+spec:
+  keyspace: temp_org
+  organizationId: 9aa71274-d70f-4e38-ad34-df7ffdbf9e88

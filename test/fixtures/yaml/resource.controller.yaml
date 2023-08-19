@@ -1,0 +1,161 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: event-sources.flowcore.io
+spec:
+  group: flowcore.io
+  names:
+    kind: EventSource
+    plural: event-sources
+    singular: event-source
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                organizationId:
+                  type: string
+                keyspace:
+                  type: string
+                  pattern: "^[a-z0-9_]*$"
+                ingestionChannel:
+                  type: object
+                  properties:
+                    tag:
+                      type: string
+                    replicas:
+                      type: number
+                    logLevel:
+                      type: string
+                eventSource:
+                  type: object
+                  properties:
+                    tag:
+                      type: string
+                    replicas:
+                      type: number
+                    logLevel:
+                      type: string
+              required:
+                - keyspace
+                - organizationId
+            status:
+              type: object
+              properties:
+                keyspace:
+                  type: string
+                eventSource:
+                  type: string
+                ingestionChannel:
+                  type: string
+                lastEventRecorded:
+                  type: string
+                conditions:
+                  description: Represents the latest available observations of a
+                    replica set's current state.
+                  items:
+                    description: ReplicaSetCondition describes the state of a replica
+                      set at a certain point.
+                    properties:
+                      lastTransitionTime:
+                        description: The last time the condition transitioned from
+                          one status to another.
+                        format: date-time
+                        type: string
+                      message:
+                        description: A human readable message indicating details
+                          about the transition.
+                        type: string
+                      reason:
+                        description: The reason for the condition's last transition.
+                        type: string
+                      status:
+                        description: Status of the condition, one of True, False,
+                          Unknown.
+                        type: string
+                      type:
+                        description: Type of replica set condition.
+                        type: string
+                    required:
+                      - status
+                      - type
+                    type: object
+                  type: array
+                observedGeneration:
+                  description: ObservedGeneration reflects the generation of the
+                    most recently observed ReplicaSet.
+                  format: int64
+                  type: integer
+      subresources:
+        status: { }
+---
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: event-source-controller
+spec:
+  generateSelector: true
+  resyncPeriodSeconds: 30
+  parentResource:
+    apiVersion: flowcore.io/v1
+    resource: event-sources
+  childResources:
+    - apiVersion: apps/v1
+      resource: deployments
+      updateStrategy:
+        method: RollingInPlace
+        statusChecks:
+          conditions:
+            - type: Available
+              status: "True"
+    - apiVersion: v1
+      resource: services
+      updateStrategy:
+        method: InPlace
+    - apiVersion: v1
+      resource: secrets
+      updateStrategy:
+        method: InPlace
+  hooks:
+    sync:
+      webhook:
+        url: http://host.docker.internal:3901/sync
+---
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: event-source-controller2
+spec:
+  generateSelector: true
+  resyncPeriodSeconds: 30
+  parentResource:
+    apiVersion: flowcore.io/v1
+    resource: event-sources
+  childResources:
+    - apiVersion: apps/v1
+      resource: deployments
+      updateStrategy:
+        method: RollingInPlace
+        statusChecks:
+          conditions:
+            - type: Available
+              status: "True"
+    - apiVersion: v1
+      resource: services
+      updateStrategy:
+        method: InPlace
+    - apiVersion: v1
+      resource: secrets
+      updateStrategy:
+        method: InPlace
+  hooks:
+    sync:
+      webhook:
+        url: http://172.17.0.1:3901/sync
