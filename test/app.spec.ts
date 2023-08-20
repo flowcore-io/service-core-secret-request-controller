@@ -55,13 +55,14 @@ describe("Org Event Source Controller (e2e)", () => {
     );
     await waitForExpect(
       async () => {
-        const secrets = exec(
-          "kubectl get secret -n temp-org -o jsonpath='{.items[*].metadata.name}'",
+        const secret = exec(
+          `kubectl get secret ${secretName} -n temp-org -o jsonpath='{.metadata.name}'`,
           {
             silent: true,
           },
         ).stdout.split(" ");
-        expect(secrets.includes(secretName)).toBe(true);
+        console.log("Secret Present: ", secret);
+        expect(secret).toBe(secretName);
       },
       450000,
       5000,
