@@ -62,14 +62,14 @@ describe("Org Event Source Controller (e2e)", () => {
           },
         ).stdout;
         console.log("Tail: ", tail);
-        const secret = exec(
+        const secrets = exec(
           `kubectl get secret ${secretName} -n temp-org -o jsonpath='{.metadata.name}'`,
           {
             silent: true,
           },
         ).stdout.split(" ");
-        console.log("Secret Present: ", secret);
-        expect(secret).toBe(secretName);
+        console.log("Secret Present: ", secrets);
+        expect(secrets.includes(secretName)).toBe(true);
       },
       450000,
       5000,
