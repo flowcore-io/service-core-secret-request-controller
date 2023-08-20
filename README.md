@@ -31,11 +31,6 @@ classDiagram
 | Environment Variable   | Description                             |   Type   | Default Value    | Required |
 |------------------------|-----------------------------------------|:--------:|------------------|:--------:|
 | PORT                   | The port the service will listen on     | `number` | `3000`           |          |
-| GRPC_URL               | The grpc url the service will listen on | `string` |                  |    X     |
-| NATS_SERVERS           | The nats servers to connect to          | `string` |                  |    X     |
-| FLOWCORE_DATA_PUMP_URL | The url of the data pump                | `string` | `localhost:5001` |          |
-| FLOWCORE_ADAPTER_URL   | The url of the ingestion sidecar adapter         |  `string`  | http://localhost:3001 |          |
-| FLOWCORE_DATA_CORE_ID  | The id of the data core to use for the data pump | <datacore> |                       |    X     |
 
 ## Metrics
 
