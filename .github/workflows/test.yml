@@ -26,7 +26,7 @@ jobs:
         uses: helm/kind-action@v1.8.0
       - name: Install Metacontroller
         run: |
-          kubectl apply -k https://github.com/metacontroller/metacontroller/manifests/production
+          kubectl apply -k ./test/fixtures/yaml/metacontroller
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.5.1
         with:
