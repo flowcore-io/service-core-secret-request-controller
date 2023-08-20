@@ -24,4 +24,3 @@ wait_for_port() {
 }
 
 wait_for_port 30 "nc -z localhost 4222"
-wait_for_port 30 "curl -sSf http://localhost:3001/health"

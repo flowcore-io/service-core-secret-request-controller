@@ -1,91 +1,71 @@
 import { AppModule } from "../src/app.module";
 import { NestApplicationBuilder } from "@jbiskur/nestjs-test-utilities";
-import {
-  NatsReceiver,
-  NatsTesterService,
-  ReceiverModule,
-} from "./fixtures/nats-tester";
 import { INestApplication, Module } from "@nestjs/common";
-import { Transport } from "@nestjs/microservices";
 import { LoggerModulePlugin } from "@flowcore/testing-microservice";
 import { K8sPrepModule, K8sPrepService } from "./fixtures/k8s-prep.module";
-import waitForExpect from "wait-for-expect";
+import { Transport } from "@nestjs/microservices";
 import { exec } from "shelljs";
+import waitForExpect from "wait-for-expect";
+import { faker } from "@faker-js/faker";
 
 describe("Org Event Source Controller (e2e)", () => {
   jest.setTimeout(1000000);
   let receiver: INestApplication;
   let app: INestApplication;
-  let sender: NatsTesterService;
-  let natsReceiver: NatsReceiver;
   let k8sPrep: K8sPrepService;
 
   beforeAll(async () => {
     @Module({
-      imports: [ReceiverModule, K8sPrepModule],
+      imports: [K8sPrepModule],
     })
     class TestPrepModule {}
 
     receiver = await new NestApplicationBuilder()
       .withTestModule((builder) => builder.withModule(TestPrepModule))
       .with(LoggerModulePlugin)
-      .buildAsMicroservice({
-        transport: Transport.NATS,
-        options: {
-          servers: ["nats://localhost:4222"],
-        },
-      });
+      .build();
 
-    sender = await receiver.resolve(NatsTesterService);
-    natsReceiver = await receiver.resolve(NatsReceiver);
     k8sPrep = await receiver.resolve(K8sPrepService);
 
     app = await new NestApplicationBuilder()
-      .withTestModule((testModule) => testModule.withModule(AppModule))
-      .buildAsMicroservice({
-        transport: Transport.NATS,
-        options: {
-          servers: ["nats://localhost:4222"],
-          queue: "test-org-event-source-controller",
+      .withTestModule((builder) => builder.withModule(AppModule))
+      .buildAsMicroservice(
+        {
+          transport: Transport.NATS,
+          options: {
+            servers: ["nats://localhost:4222"],
+          },
         },
-      });
+        3901,
+      );
   });
 
   it("should create event source states", async () => {
-    // await k8sPrep.createEventSource();
-    // await waitForExpect(
-    //   async () => {
-    //     exec("kubectl get pods -n temp-org -o wide");
-    //     expect(
-    //       natsReceiver.getPayload<SourcedEventOrganizationEventSourceStateUpdated>(
-    //         SOURCE_EVENT_ORGANIZATION_EVENT_SOURCE_STATE_UPDATED,
-    //         (event) =>
-    //           event.state ===
-    //           FLOWCORE_ENUM_ORGANIZATION_EVENT_SOURCE_STATE.INITIALIZING,
-    //       ),
-    //     ).toEqual(
-    //       expect.objectContaining({
-    //         organizationId: "9aa71274-d70f-4e38-ad34-df7ffdbf9e88",
-    //         state: FLOWCORE_ENUM_ORGANIZATION_EVENT_SOURCE_STATE.INITIALIZING,
-    //       }),
-    //     );
-    //     expect(
-    //       natsReceiver.getPayload<SourcedEventOrganizationEventSourceStateUpdated>(
-    //         SOURCE_EVENT_ORGANIZATION_EVENT_SOURCE_STATE_UPDATED,
-    //         (event) =>
-    //           event.state ===
-    //           FLOWCORE_ENUM_ORGANIZATION_EVENT_SOURCE_STATE.READY,
-    //       ),
-    //     ).toEqual(
-    //       expect.objectContaining({
-    //         organizationId: "9aa71274-d70f-4e38-ad34-df7ffdbf9e88",
-    //         state: FLOWCORE_ENUM_ORGANIZATION_EVENT_SOURCE_STATE.READY,
-    //       }),
-    //     );
-    //   },
-    //   450000,
-    //   5000,
-    // );
+    const secretName =
+      `${faker.word.adjective()}-${faker.word.noun()}`.toLowerCase();
+
+    await k8sPrep.createSourceSecret(secretName, {
+      hello: Buffer.from("world", "utf8").toString("base64"),
+    });
+
+    await k8sPrep.createSecretRequest(
+      `${secretName}-sr`,
+      secretName,
+      secretName,
+    );
+    await waitForExpect(
+      async () => {
+        const secrets = exec(
+          "kubectl get secret -n temp-org -o jsonpath='{.items[*].metadata.name}'",
+          {
+            silent: true,
+          },
+        ).stdout.split(" ");
+        expect(secrets.includes(secretName)).toBe(true);
+      },
+      30000,
+      2000,
+    );
   });
 
   afterAll(async () => {

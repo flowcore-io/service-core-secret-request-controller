@@ -21,5 +21,7 @@ module.exports = {
   setupFiles: ["./test/setup-env-vars.ts"],
   testEnvironment: "node",
   testRegex: "./test/.*\\.spec\\.ts$",
-  transform: { "^.+\\.(t|j)s$": "ts-jest" },
+  transform: {
+    "^.+\\.(t|j)s?$": ["@swc/jest", { sourceMaps: "inline" }],
+  },
 };

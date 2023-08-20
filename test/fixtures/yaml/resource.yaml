@@ -1,0 +1,12 @@
+apiVersion: flowcore.io/v1
+kind: SecretRequest
+metadata:
+  name: <%= name %>
+  namespace: temp-org
+spec:
+  sourceSecret:
+    name: <%= sourceName %>
+    namespace: <%= sourceNamespace %>
+  destinationSecret:
+    name: <%= destinationName %>
+    namespace: temp-org

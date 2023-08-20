@@ -2,9 +2,8 @@ import { Body, Controller, HttpCode, Post } from "@nestjs/common";
 import { InjectLogger, LoggerService } from "@flowcore/microservice";
 import { MetaService } from "./meta.service";
 import { SyncInput } from "../interfaces/sync-input.interface";
-import { EventSourceService } from "./event-source.service";
-import * as _ from "lodash";
 import { shake } from "radash";
+import { Secret } from "kubernetes-types/core/v1";
 
 @Controller()
 export class MetaController {
@@ -12,48 +11,69 @@ export class MetaController {
     @InjectLogger(MetaController.name)
     private readonly logger: LoggerService,
     private readonly metaService: MetaService,
-    private readonly eventSourceService: EventSourceService,
   ) {}
+
+  @Post("customize")
+  @HttpCode(200)
+  async customize(@Body() input: SyncInput) {
+    return {
+      relatedResources: [
+        {
+          apiVersion: "v1",
+          resource: "secrets",
+          namespace: input.parent.spec.sourceSecret.namespace,
+          name: input.parent.spec.sourceSecret.name,
+        },
+      ],
+    };
+  }
 
   @Post("sync")
   @HttpCode(200)
   async sync(@Body() input: SyncInput) {
+    let resource = input.parent.status?.resource || "NotReady";
+    let lastSynced = input.parent.status?.lastSynced || "Never";
+    if (
+      !input.related ||
+      Object.keys(input.related["Secret.v1"]).length === 0
+    ) {
+      this.logger.info(`Requested secret not found, retrying in 30 seconds`);
+      return shake({
+        status: {
+          lastSynced,
+          resource: "NotReady",
+        },
+        children: [],
+        resyncAfterSeconds: 30,
+      });
+    }
+
     this.logger.info(
-      `Syncing ${input.parent.kind} - ${input.parent.metadata.name}, Generation: ${input.parent.status?.observedGeneration}`,
+      `Consolidating ${input.parent.kind} - ${input.parent.metadata.name}, Generation: ${input.parent.metadata.generation}, Observed Generation: ${input.parent.status?.observedGeneration}`,
     );
 
-    let deploymentReady = false;
+    const children: Secret[] = [];
 
-    const resync = {
-      ...(!deploymentReady && { resyncAfterSeconds: 10 }),
-    };
+    const secretSyncResult = await this.metaService.createSecret(input);
 
-    const obj = shake({
+    if (secretSyncResult.status === "Ready") {
+      resource = "Ready";
+      if (lastSynced === "Never") {
+        lastSynced = new Date().toISOString();
+      }
+      children.push(secretSyncResult.secret);
+    } else {
+      lastSynced = new Date().toISOString();
+      children.push(secretSyncResult.secret);
+    }
+
+    return shake({
       status: {
-        // keyspace: keyspaceReady ? "Deployed" : "NotDeployed",
-        // eventSource: deploymentReady ? "Deployed" : "NotDeployed",
-        // ingestionChannel: deploymentReady ? "Deployed" : "NotDeployed",
-        // lastEventRecorded: deploymentReady ? "Ready" : "Added",
+        lastSynced,
+        resource,
       },
-      children: [
-        this.eventSourceService.createEventSource({
-          organizationId: input.parent.spec.organizationId,
-          keyspace: input.parent.spec.keyspace,
-          ...(input.parent.spec.eventSource?.tag && {
-            tag: input.parent.spec.eventSource.tag,
-          }),
-          ...(input.parent.spec.eventSource?.replicas && {
-            replicas: input.parent.spec.eventSource.replicas,
-          }),
-          ...(input.parent.spec.eventSource?.logLevel && {
-            logLevel: input.parent.spec.eventSource.logLevel,
-          }),
-        }),
-        this.eventSourceService.createService(),
-      ],
-      ...resync,
+      children,
+      ...(resource !== "Ready" && { resyncAfterSeconds: 10 }),
     });
-
-    return obj;
   }
 }

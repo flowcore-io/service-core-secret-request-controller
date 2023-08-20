@@ -7,8 +7,6 @@ import {
   DefaultAppConfiguration,
   LoggerModuleConfiguration,
 } from "@flowcore/microservice";
-import { join } from "path";
-import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { AppConfiguration } from "./config/app.configuration";
 
 async function bootstrap() {

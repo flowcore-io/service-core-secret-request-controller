@@ -6,11 +6,3 @@ services:
     image: nats:2.9.11-alpine3.17
     ports:
       - "4222:4222"
-  adapter:
-    image: 305363105399.dkr.ecr.eu-west-1.amazonaws.com/source-ingestion-channel-adapter:1.2.0
-    ports:
-      - "3001:3001"
-    environment:
-      NATS_SERVERS: "nats://nats:4222"
-      PRODUCER_ID: "test-producer"
-      LOG_LEVEL: "debug"
