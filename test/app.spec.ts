@@ -55,6 +55,13 @@ describe("Org Event Source Controller (e2e)", () => {
     );
     await waitForExpect(
       async () => {
+        const tail = exec(
+          "kubectl logs -l app.kubernetes.io/name=metacontroller -n metacontroller --tail 10",
+          {
+            silent: true,
+          },
+        ).stdout;
+        console.log("Tail: ", tail);
         const secret = exec(
           `kubectl get secret ${secretName} -n temp-org -o jsonpath='{.metadata.name}'`,
           {
