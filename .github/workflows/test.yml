@@ -22,8 +22,8 @@ jobs:
         with:
           token: ${{ secrets.FLOWCORE_MACHINE_GITHUB_TOKEN }}
           submodules: true
-      - name: Kind Cluster
-        uses: helm/kind-action@v1.5.0
+      - name: KinD (Kubernetes in Docker) Action
+        uses: engineerd/setup-kind@v0.5.0
       - name: Install Metacontroller
         run: |
           kubectl apply -k https://github.com/metacontroller/metacontroller/manifests/production
