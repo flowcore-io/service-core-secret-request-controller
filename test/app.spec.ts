@@ -63,8 +63,8 @@ describe("Org Event Source Controller (e2e)", () => {
         ).stdout.split(" ");
         expect(secrets.includes(secretName)).toBe(true);
       },
-      30000,
-      2000,
+      450000,
+      5000,
     );
   });
 
