@@ -8,6 +8,7 @@ import {
   LoggerModuleConfiguration,
 } from "@flowcore/microservice";
 import { AppConfiguration } from "./config/app.configuration";
+import bodyParser from "body-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -17,6 +18,7 @@ async function bootstrap() {
   >;
   const logger = createSimpleLogger(config.schema);
 
+  app.use(bodyParser.json({ limit: "5mb" }));
   app.useLogger(logger);
   app.enableShutdownHooks();
 
