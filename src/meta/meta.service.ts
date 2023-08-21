@@ -28,7 +28,7 @@ export class MetaService {
       ];
 
     if (!relatedSecret || !relatedSecret.data) {
-      this.logger.info(`Related secret not found`, { ...input });
+      this.logger.error(`Related secret not found`, { ...input });
       throw new Error("Related secret not found");
     }
 
