@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.0...v1.0.1) (2023-08-21)
+
+
+### Bug Fixes
+
+* added body parser limit ([dd7554e](https://github.com/flowcore-io/service-core-secret-request-controller/commit/dd7554e6b753098b279c778c60cfac429a821d31))
+
 ## 1.0.0 (2023-08-20)
 
 
