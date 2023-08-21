@@ -1,6 +1,6 @@
 {
   "name": "core-secret-request-controller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A secret request metacontroller hook that handles requests for secrets from within the kubernetes cluster",
   "author": "",
   "private": true,
