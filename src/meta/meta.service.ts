@@ -27,6 +27,11 @@ export class MetaService {
         `${input.parent.spec.destinationSecret.namespace}/${input.parent.spec.destinationSecret.name}`
       ];
 
+    if (!relatedSecret || !relatedSecret.data) {
+      this.logger.info(`Related secret not found`, { ...input });
+      throw new Error("Related secret not found");
+    }
+
     if (!existingSecret) {
       status = "NotReady";
     }
