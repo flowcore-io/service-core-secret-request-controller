@@ -22,7 +22,7 @@ export class MetaController {
           apiVersion: "v1",
           resource: "secrets",
           namespace: input.parent.spec.sourceSecret.namespace,
-          name: input.parent.spec.sourceSecret.name,
+          names: [input.parent.spec.sourceSecret.name],
         },
       ],
     };
