@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.1...v1.0.2) (2023-08-28)
+
+
+### Bug Fixes
+
+* added better handling of related secret not found ([545e4ef](https://github.com/flowcore-io/service-core-secret-request-controller/commit/545e4efef5edbb57c77bae842d9b25fdf7f81e33))
+* renamed name for related resource to names and changed it from string to array ([a7b95d9](https://github.com/flowcore-io/service-core-secret-request-controller/commit/a7b95d9b5b7ae6c36d3111ef63075024a8224e39))
+* set related info log level to be error ([a779be5](https://github.com/flowcore-io/service-core-secret-request-controller/commit/a779be52ee7e68e07d0a87028d6c380d7413b8ac))
+
 ## [1.0.1](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.0...v1.0.1) (2023-08-21)
 
 
