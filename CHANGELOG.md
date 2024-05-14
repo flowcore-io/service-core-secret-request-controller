@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.2...v1.0.3) (2024-05-14)
+
+
+### Bug Fixes
+
+* changed build to push to docker ([11010ac](https://github.com/flowcore-io/service-core-secret-request-controller/commit/11010ac5db19d7094cda42e0f891ada2962afd8f))
+* updated readme installation script ([7e36df1](https://github.com/flowcore-io/service-core-secret-request-controller/commit/7e36df1c6bb0f4f9c988c5bc2ce1f9881a65792d))
+
 ## [1.0.2](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.1...v1.0.2) (2023-08-28)
 
 
