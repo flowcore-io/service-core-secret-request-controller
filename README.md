@@ -54,7 +54,7 @@ helm install <name> oci://ghcr.io/metacontroller/metacontroller-helm --version=4
 then install the controller
 
 ```bash
-export NAMESPACE=<<my-namespace>>; curl -s https://raw.githubusercontent.com/flowcore-io/service-core-secret-request-controller/main/crd/metacontroller-controller.yaml | sed "s/<<namespace>>/$NAMESPACE/g" | kubectl apply -n $NAMESPACE -f -
+curl -s https://raw.githubusercontent.com/flowcore-io/service-core-secret-request-controller/main/crd/metacontroller-controller.yaml | kubectl apply -n flowcore -f -
 ```
 
 This will install the controller and the crds required to run the controller.
