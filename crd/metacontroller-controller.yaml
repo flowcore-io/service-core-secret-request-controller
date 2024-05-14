@@ -89,10 +89,85 @@ spec:
       subresources:
         status: { }
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flowcore
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secret-request-controller
+  namespace: flowcore
+  labels:
+    app: secret-request-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secret-request-controller
+  template:
+    metadata:
+      labels:
+        app: secret-request-controller
+        app.kubernetes.io/name: secret-request-controller
+    spec:
+      containers:
+        - name: secret-request-controller
+          image: >-
+            305363105399.dkr.ecr.eu-west-1.amazonaws.com/core-secret-request-controller:1.0.2
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '1'
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: secret-request-controller
+  namespace: flowcore
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: secret-request-controller
+  type: ClusterIP
+---
 apiVersion: metacontroller.k8s.io/v1alpha1
 kind: CompositeController
 metadata:
   name: secret-request-controller
+  namespace: flowcore
 spec:
   generateSelector: true
   parentResource:
@@ -106,7 +181,7 @@ spec:
   hooks:
     sync:
       webhook:
-        url: http://secret-request-controller.<<namespace>>:3000/sync
+        url: http://secret-request-controller.flowcore:3000/sync
     customize:
       webhook:
-        url: http://secret-request-controller.<<namespace>>:3000/customize
+        url: http://secret-request-controller.flowcore:3000/customize
