@@ -1,6 +1,6 @@
 # Secret Request Controller
 
-A secret request metacontroller hook that handles requests for secrets from within the kubernetes cluster
+A secret request [metacontroller](https://metacontroller.github.io/metacontroller/intro.html) hook that handles requests for secrets from within the kubernetes cluster
 
 ## Key Systems
 
@@ -34,7 +34,7 @@ classDiagram
 
 ## Installation
 
-To install the metacontroller on your own environment you first need to install metacontroller using helm
+To install the [metacontroller](https://metacontroller.github.io/metacontroller/intro.html) on your own environment you first need to install metacontroller using helm
 
 example values file:
 
