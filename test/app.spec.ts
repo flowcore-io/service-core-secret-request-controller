@@ -40,7 +40,7 @@ describe("Org Event Source Controller (e2e)", () => {
       );
   });
 
-  it("should create event source states", async () => {
+  it("should create secret that was requested", async () => {
     const secretName =
       `${faker.word.adjective()}-${faker.word.noun()}`.toLowerCase();
 
@@ -70,6 +70,42 @@ describe("Org Event Source Controller (e2e)", () => {
         ).stdout.split(" ");
         console.log("Secret Present: ", secrets);
         expect(secrets.includes(secretName)).toBe(true);
+      },
+      450000,
+      5000,
+    );
+  });
+
+  it("should create secret that was requested stored with a new name", async () => {
+    const secretName =
+      `${faker.word.adjective()}-${faker.word.noun()}`.toLowerCase();
+
+    await k8sPrep.createSourceSecret(secretName, {
+      hello: Buffer.from("world", "utf8").toString("base64"),
+    });
+
+    await k8sPrep.createSecretRequest(
+      `${secretName}-sr`,
+      secretName,
+      `${secretName}-new`,
+    );
+    await waitForExpect(
+      async () => {
+        const tail = exec(
+          "kubectl logs -l app.kubernetes.io/name=metacontroller -n metacontroller --tail 10",
+          {
+            silent: true,
+          },
+        ).stdout;
+        console.log("Tail: ", tail);
+        const secrets = exec(
+          `kubectl get secret ${secretName}-new -n temp-org -o jsonpath='{.metadata.name}'`,
+          {
+            silent: true,
+          },
+        ).stdout.split(" ");
+        console.log("Secret Present: ", secrets);
+        expect(secrets.includes(`${secretName}-new`)).toBe(true);
       },
       450000,
       5000,
