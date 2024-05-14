@@ -32,28 +32,63 @@ classDiagram
 |------------------------|-----------------------------------------|:--------:|------------------|:--------:|
 | PORT                   | The port the service will listen on     | `number` | `3000`           |          |
 
-## Metrics
+## Installation
 
-Prometheus metrics are exposed on the `/metrics` endpoint
+To install the metacontroller on your own environment you first need to install metacontroller using helm
 
-## More Information
+example values file:
 
-- [Backend](https://backstage.flowcore.io/catalog/default/group/backend)
+```yaml
+replicas: 2
+commandArgs:
+  - --zap-log-level=4
+  - --discovery-interval=20s
+  - --leader-election=true
+  - --workers=10
+```
 
-# Development
+```bash
+helm install <name> oci://ghcr.io/metacontroller/metacontroller-helm --version=4.11.12 --values ./values.yaml
+```
+
+then install the controller
+
+```bash
+export NAMESPACE=<<my-namespace>>; curl -s https://raw.githubusercontent.com/flowcore-io/service-core-secret-request-controller/main/crd/metacontroller-controller.yaml | sed "s/<<namespace>>/$NAMESPACE/g" | kubectl apply -n $NAMESPACE -f -
+```
+
+This will install the controller and the crds required to run the controller.
+
+## Usage
+
+To use the controller you need to create a secret request object, they look like this and are cluster scoped:
+
+```yaml
+apiVersion: flowcore.io/v1
+kind: SecretRequest
+metadata:
+  name: my-secret-request
+spec:
+  sourceSecret:
+    name: source-secret-name
+    namespace: source-secret-namespace
+  destinationSecret:
+    name: destination-secret-name
+    namespace: destination-secret-namespace
+```
+
+## Development
 
 To start using the project just configure it using:
 
-## Configuration
+### Configuration
 
 ```bash
-yarn install && git submodule update --init --recursive
-git submodule add --force git@github.com:flowcore-io/the-source-message-schema.git src/assets/messages
+yarn install
 yarn reconfigure
-yarn generate:domain source
 ```
 
-## Testing
+### Testing
 
 local testing requires a local kubernetes cluster to be running, this can be done using kind
 
@@ -62,17 +97,10 @@ brew install kind
 kind create cluster --name local
 ```
 
-
-## Usage
+### Run
 
 run with:
 
 ```bash
 yarn start
-```
-
-if tests require ECR containers to be running, run:
-
-```bash
-yarn login:ecr
 ```
