@@ -1,23 +1,19 @@
-ARG version=18.18.0
+ARG version=18.18.1
 FROM node:${version}-alpine as build
-ARG FONTAWESOME_NPM_AUTH_TOKEN
-ENV FONTAWESOME_NPM_AUTH_TOKEN ${FONTAWESOME_NPM_AUTH_TOKEN}
-ARG CODEARTIFACT_AUTH_TOKEN
-ENV CODEARTIFACT_AUTH_TOKEN ${CODEARTIFACT_AUTH_TOKEN}
 ARG CI=false
 ENV CI ${CI}
 RUN mkdir -p /build
 WORKDIR /build
 COPY package.json yarn.lock nest-cli.json tsconfig*.json ./
 COPY src ./src/
-RUN yarn --frozen-lockfile
+RUN yarn --frozen-lockfile --network-timeout 100000
 RUN yarn build
 
 FROM node:${version}-alpine as production
 RUN mkdir -p /build
 WORKDIR /build
 COPY package.json yarn.lock tsconfig*.json src ./
-RUN yarn --frozen-lockfile --production
+RUN yarn --frozen-lockfile --production --network-timeout 100000
 
 FROM node:${version}-alpine as main
 ENV NODE_ENV production
