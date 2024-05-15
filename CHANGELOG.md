@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.4...v1.0.5) (2024-05-15)
+
+
+### Bug Fixes
+
+* changed the package name ([969e985](https://github.com/flowcore-io/service-core-secret-request-controller/commit/969e9852eccf59096fbfaf42026aed9bc6916fdf))
+
 ## [1.0.4](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.3...v1.0.4) (2024-05-15)
 
 
