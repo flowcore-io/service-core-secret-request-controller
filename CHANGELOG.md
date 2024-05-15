@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.3...v1.0.4) (2024-05-15)
+
+
+### Bug Fixes
+
+* added timeout to yarn install commands in docker ([eaa6c80](https://github.com/flowcore-io/service-core-secret-request-controller/commit/eaa6c8005f643c49aba9319f9b6c987bbabae48c))
+
 ## [1.0.3](https://github.com/flowcore-io/service-core-secret-request-controller/compare/v1.0.2...v1.0.3) (2024-05-14)
 
 
