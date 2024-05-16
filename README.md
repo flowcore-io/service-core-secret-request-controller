@@ -51,11 +51,20 @@ commandArgs:
 helm install <name> oci://ghcr.io/metacontroller/metacontroller-helm --version=4.11.12 --values ./values.yaml
 ```
 
-then install the controller
+then install the controller manually
 
 ```bash
 curl -s https://raw.githubusercontent.com/flowcore-io/service-core-secret-request-controller/main/crd/metacontroller-controller.yaml | kubectl apply -n flowcore -f -
 ```
+
+or using helm
+
+```bash
+helm add repo flowcore https://flowcore-io.github.io/helm-charts
+helm install secret-request-controller flowcore/secret-request-controller
+```
+
+> Note: see the [helm chart](https://github.com/flowcore-io/flowcore-helm-charts/blob/main/charts/flowcore-secret-request-controller/README.md) for more information
 
 This will install the controller and the crds required to run the controller.
 
